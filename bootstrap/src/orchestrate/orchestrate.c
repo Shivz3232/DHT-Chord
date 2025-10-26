@@ -48,12 +48,12 @@ void* orchestrate(void* input) {
       break;
     }
 
-    if (newNode != newNode->previous && informPeer(newNode->previous) < 0) {
+    if (newNode != newNode->previous && informAboutNext(newNode->previous) < 0) {
       info("orchestrate: Failed to inform peer %s's predecessor it's position\n", newNode->peer->name);
       break;
     }
 
-    if (newNode != newNode->next && informPeer(newNode->next) < 0) {
+    if (newNode != newNode->next && informAboutPreviou(newNode->next) < 0) {
       info("orchestrate: Failed to inform peer %s's successor it's position\n", newNode->peer->name);
       break;
     }
