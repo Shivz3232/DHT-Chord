@@ -16,6 +16,8 @@ Node* createNode(Peer*);
 void* insertNode(Node*);
 
 int informPeer(Node*);
+int informAboutNext(Node*);
+int informAboutPrevious(Node*);
 
 void* orchestrate(void* input) {
   while (1) {
@@ -53,7 +55,7 @@ void* orchestrate(void* input) {
       break;
     }
 
-    if (newNode != newNode->next && informAboutPreviou(newNode->next) < 0) {
+    if (newNode != newNode->next && informAboutPrevious(newNode->next) < 0) {
       info("orchestrate: Failed to inform peer %s's successor it's position\n", newNode->peer->name);
       break;
     }
@@ -152,9 +154,6 @@ void* insertNode(Node* newNode) {
 
   return NULL;
 }
-
-int informAboutNext(Node*);
-int informAboutPrevious(Node*);
 
 int informPeer(Node* node) {
   int result;
