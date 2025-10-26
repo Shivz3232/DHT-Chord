@@ -1,11 +1,9 @@
 #include <netdb.h>
 
-#include "../peers/peers.h"
+#include "../peer/peer.h"
 
 #ifndef UTILS_H
 #define UTILS_H
-
-void* dialBootstrapServer();
 
 // SOCKETS HELPERS
 char* getNameInfo(struct sockaddr*, socklen_t*);

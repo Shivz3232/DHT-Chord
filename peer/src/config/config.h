@@ -1,4 +1,4 @@
-#include "../peers/peers.h"
+#include "../peer/peer.h"
 
 #ifndef CONFIG_H
 #define CONFIG_H
@@ -9,7 +9,7 @@ typedef struct {
   char* name;
   char* network;
   char* inputHostname;
-  char* bootstrapHostName;
+  char* bootstrapHostname;
 
   char* cEnv;
   int processId;
