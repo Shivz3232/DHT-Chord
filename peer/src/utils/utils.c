@@ -195,7 +195,8 @@ void* parseArgs(int argc, char* const argv[]) {
   };
 
   while (1) {
-    opt = getopt_long(argc, argv, "b", longOptions, &optionIndex);
+    debug("here");
+    opt = getopt_long(argc, argv, "b:d:o:", longOptions, &optionIndex);
 
     if (opt == -1) break;
 
@@ -214,6 +215,14 @@ void* parseArgs(int argc, char* const argv[]) {
         ctx->bootstrapHostname = strdup(optarg);
         break;
 
+      case 'd':
+        ctx->joinDelay = atoi(optarg);
+        break;
+
+      case 'o':
+        ctx->objectStoreFilePath = strdup(optarg);
+        break;
+
       default:
         break;
     }
@@ -222,6 +231,9 @@ void* parseArgs(int argc, char* const argv[]) {
   debug("parseArgs: name set to %s", ctx->name);
   debug("parseArgs: network set to %s", ctx->network);
   debug("parseArgs: inputHostname set to %s", ctx->inputHostname);
+  debug("parseArgs: bootstrapHostname set to %s", ctx->bootstrapHostname);
+  debug("parseArgs: joinDelay set to %d", ctx->joinDelay);
+  debug("parseArgs: objectStoreFilePath set to %s", ctx->objectStoreFilePath);
 
   return NULL;
 }

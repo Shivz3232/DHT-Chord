@@ -10,6 +10,8 @@ typedef struct {
   char* network;
   char* inputHostname;
   char* bootstrapHostname;
+  int joinDelay;
+  char* objectStoreFilePath;
 
   char* cEnv;
   int processId;
