@@ -67,49 +67,6 @@ int bindToBest(struct addrinfo* addrInfo) {
   return -1;
 }
 
-void* acceptConnections(void* input) {
-  while (ctx->inboundConnections < ctx->numPeers - 1) {
-    int peerFd;
-    struct sockaddr_storage peerAddr;
-    socklen_t peerAddrLen = sizeof(peerAddr);
-
-    if ((peerFd = accept(ctx->socketFd, (struct sockaddr*)&peerAddr, &peerAddrLen)) < 0) {
-      perror("accept");
-      exit(EXIT_FAILURE);
-    }
-
-    char* peerName = getNameInfo((struct sockaddr*)&peerAddr, &peerAddrLen);
-
-    int found = 0;
-    for (int i = 0; i < ctx->numPeers && found == 0; i++) {
-      if (strcmp(ctx->peers[i]->name, peerName) == 0) {
-        found = 1;
-
-        ctx->peers[i]->read_socket_fd = peerFd;
-
-        ctx->peers[i]->read_addr_info = malloc(peerAddrLen);
-        memcpy(ctx->peers[i]->read_addr_info, &peerAddr, peerAddrLen);
-
-        ctx->peers[i]->read_addr_info_len = peerAddrLen;
-
-        break;
-      }
-    }
-
-    if (found == 0) {
-      info("Received connection from an unknown peer %s\n", peerName);
-    } else {
-      debug("Successful inbound connection from %s\n", peerName);
-    }
-
-    free(peerName);
-
-    ctx->inboundConnections += 1;
-  }
-
-  return NULL;
-}
-
 char* createPacket(char* content) {
   int contentSize = strlen(content);
 

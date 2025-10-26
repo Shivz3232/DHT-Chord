@@ -17,7 +17,6 @@ void* initializeBacklog();
 void* initializeChannelSize();
 void* initializeMaxRetries();
 void* initializeBackoffDuration();
-void* initializeMaxPeers();
 void* initializeMaxPeerNameSize();
 void* initializePacketHeaderSize();
 void* initializeMaxMessageSize();
@@ -36,7 +35,6 @@ void* initializeEnvVariables() {
   initializeMaxRetries();
   initializeBackoffDuration();
   initializeMaxPeerNameSize();
-  initializeMaxPeers();
   initializePacketHeaderSize();
   initializeMaxMessageSize();
   initializeMaxPacketSize();
@@ -53,10 +51,6 @@ void* setDefaults() {
   ctx->maxRetries = 5;
   ctx->backoffDuration = 5;
 
-  ctx->inboundConnections = 0;
-  ctx->outboundConnections = 0;
-
-  ctx->maxPeers = 7;
   ctx->maxPeerNameSize = 100;
 
   ctx->packetHeaderSize = 1;
@@ -167,19 +161,6 @@ void* initializeMaxPeerNameSize() {
   } else {
     ctx->maxPeerNameSize = atoi(value);
     debug("MAX_PEER_NAME_SIZE set to %d", ctx->maxPeerNameSize);
-  }
-
-  return NULL;
-}
-
-void* initializeMaxPeers() {
-  char* value = getenv("MAX_PEERS");
-
-  if (!value) {
-    debug("MAX_PEERS not found, defaulting to: %d", ctx->maxPeers);
-  } else {
-    ctx->maxPeers = atoi(value);
-    debug("MAX_PEERS set to %d", ctx->maxPeers);
   }
 
   return NULL;

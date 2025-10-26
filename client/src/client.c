@@ -28,17 +28,15 @@ int main(int argc, char const* argv[]) {
 
   debug("============================================\n");
   debug("Initializing self socket.\n");
-  parseArgs(argc, (char* const*)argv);
+  initializeSelfSocket();
   debug("Successfully initialized self socket.\n");
   debug("============================================\n\n\n\n");
 
-  initializeSelfSocket();
+  sleep(10000);
 
   debug("============================================\n");
   debug("Wrapping up\n");
   close(ctx->socketFd);
-  freeaddrinfo(addrInfo);
-  freePeers(ctx->peers);
   debug("Processs finished\n");
   debug("============================================\n\n\n\n");
 

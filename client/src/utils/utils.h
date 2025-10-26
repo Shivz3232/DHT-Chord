@@ -1,7 +1,5 @@
 #include <netdb.h>
 
-#include "../peers/peers.h"
-
 #ifndef UTILS_H
 #define UTILS_H
 
