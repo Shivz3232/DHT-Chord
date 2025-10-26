@@ -21,6 +21,7 @@ int informAboutPrevious(Node*);
 
 void* orchestrate(void* input) {
   while (1) {
+    debug("orchestrate: Listening for new connection\n");
     Peer* newPeer = acceptNewConnection();
     if (newPeer == NULL) {
       info("orchestrate: Failed to accept new connection\n");

@@ -61,6 +61,8 @@ int main(int argc, char const* argv[]) {
       continue;
     }
 
+    debug("received %s command from bootstrap\n", message);
+
     // Handle message;
     if (strcmp(message, "NEXT") == 0) {
       handleNextCommand();

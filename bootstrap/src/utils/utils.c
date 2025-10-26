@@ -75,7 +75,7 @@ char* createPacket(char* content) {
     return NULL;
   }
 
-  if (contentSize > ctx->maxPacketSize) {
+  if (contentSize > ctx->maxMessageSize) {
     debug("Content too large for packet\n");
     return NULL;
   }
@@ -146,7 +146,7 @@ char* receivePacket(int socketFd) {
     return NULL;
   }
 
-  debug("receivePacket: inferredContentSize: %ld\n", inferredContentSize);
+  // debug("receivePacket: inferredContentSize: %ld\n", inferredContentSize);
 
   char* content = malloc(inferredContentSize + 1);
   if (content == NULL) {
@@ -181,7 +181,7 @@ int receiveAll(int socketFd, char* buf, int toBeReceived) {
 
     received += n;
 
-    debug("recv got %d bytes, total %d/%d\n", n, received, toBeReceived);
+    // debug("recv got %d bytes, total %d/%d\n", n, received, toBeReceived);
   }
 
   return toBeReceived;

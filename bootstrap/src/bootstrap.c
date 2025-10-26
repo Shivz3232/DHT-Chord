@@ -35,14 +35,14 @@ int main(int argc, char const* argv[]) {
 
   debug("============================================\n");
   debug("Starting orchestration thread.\n");
-  pthread_t orchestrationThread;
-  pthread_create(&orchestrationThread, NULL, orchestrate, NULL);
-  pthread_detach(orchestrationThread);
+  // pthread_t orchestrationThread;
+  // pthread_create(&orchestrationThread, NULL, orchestrate, NULL);
+  // pthread_detach(orchestrationThread);
+  orchestrate(NULL);
   debug("Successfully started orchestration thread.\n");
   debug("============================================\n\n\n\n");
 
   // LISTEN FOR CLIENT REQUESTS
-  sleep(1000);
 
   debug("============================================\n");
   debug("Wrapping up\n");

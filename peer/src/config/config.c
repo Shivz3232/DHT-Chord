@@ -54,7 +54,7 @@ void* setDefaults() {
 
   ctx->maxPeerNameSize = 100;
 
-  ctx->packetHeaderSize = 1;
+  ctx->packetHeaderSize = 3; // Number of digits in maxMessageSize
   ctx->maxMessageSize = 100;
   ctx->maxPacketSize = ctx->packetHeaderSize + ctx->maxMessageSize;
 
