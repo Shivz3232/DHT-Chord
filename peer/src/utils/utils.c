@@ -183,6 +183,8 @@ int receiveAll(int socketFd, char* buf, int toBeReceived) {
   return toBeReceived;
 }
 
+void* extractIdFromObjectStoreFilePath();
+
 void* parseArgs(int argc, char* const argv[]) {
   int opt;
   int optionIndex = 0;
@@ -195,7 +197,6 @@ void* parseArgs(int argc, char* const argv[]) {
   };
 
   while (1) {
-    debug("here");
     opt = getopt_long(argc, argv, "b:d:o:", longOptions, &optionIndex);
 
     if (opt == -1) break;
@@ -221,6 +222,7 @@ void* parseArgs(int argc, char* const argv[]) {
 
       case 'o':
         ctx->objectStoreFilePath = strdup(optarg);
+        extractIdFromObjectStoreFilePath();
         break;
 
       default:
@@ -234,6 +236,19 @@ void* parseArgs(int argc, char* const argv[]) {
   debug("parseArgs: bootstrapHostname set to %s", ctx->bootstrapHostname);
   debug("parseArgs: joinDelay set to %d", ctx->joinDelay);
   debug("parseArgs: objectStoreFilePath set to %s", ctx->objectStoreFilePath);
+  debug("parseArgs: id set to %d", ctx->id);
+
+  return NULL;
+}
+
+void* extractIdFromObjectStoreFilePath() {
+  char* start = ctx->objectStoreFilePath;
+  for (int i = 0, len = strlen(start); i < len && (*start <= 48 || *start> 57) ; start++);
+
+  char* end = start;
+  for (int i = strlen(start) - strlen(end), len = strlen(end); *end >= 48 && *end <= 57; end++);
+
+  ctx->id = (int) strtol(start, &end, 10);
 
   return NULL;
 }

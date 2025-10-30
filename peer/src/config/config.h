@@ -4,6 +4,8 @@
 #define CONFIG_H
 
 typedef struct {
+  int id;
+
   int socketFd;
 
   char* name;
