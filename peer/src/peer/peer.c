@@ -19,3 +19,9 @@ Peer* createPeer(char* name) {
 int dialPeer(Peer* peer) {
   return 0;
 }
+
+void* freePeer(Peer* peer) {
+  free(peer->name);
+  free(peer);
+  return NULL;
+}

@@ -14,6 +14,8 @@ Peer* acceptNewConnection();
 
 Node* createNode(Peer*);
 void* insertNode(Node*);
+char* ringToStr();
+int nodeCount();
 
 int informPeer(Node*);
 int informAboutNext(Node*);
@@ -41,7 +43,7 @@ void* orchestrate(void* input) {
       continue;
     }
 
-    debug("orchestrate: Added peer ring, previous: %d, successor: %d\n",
+    debug("orchestrate: Added peer to ring, previous: %d, successor: %d\n",
       newNode->previous->peer->id,
       newNode->next->peer->id
     );
@@ -60,6 +62,8 @@ void* orchestrate(void* input) {
       info("orchestrate: Failed to inform peer %s's successor it's position\n", newNode->peer->name);
       break;
     }
+
+    info("{RING:[%s]}\n", ringToStr());
   }
 
   info("orchestrate: exiting\n");
@@ -164,6 +168,32 @@ void* insertNode(Node* newNode) {
   return NULL;
 }
 
+int nodeCount() {
+  int count = 0;
+
+  Node* current = ring;
+  do {
+    count++;
+    current = current->next;
+  } while (current != ring);
+
+  return count;
+}
+
+char* ringToStr() {
+  int count = nodeCount();
+  int* ids = malloc(sizeof(int) * count);
+
+  int i = 0;
+  Node* current = ring;
+  do {
+    ids[i++] = current->peer->id;
+    current = current->next;
+  } while (current != ring);
+
+  return joinIntegers(ids, count, ',');
+}
+
 int informPeer(Node* node) {
   int result;
 
@@ -179,6 +209,14 @@ int informAboutNext(Node* node) {
     return -1;
   }
 
+  char nextIdStr[32];
+  snprintf(nextIdStr, 32, "%d", node->next->peer->id);
+  char* nextIdPacket = createPacket(nextIdStr);
+  if (nextIdPacket == NULL) {
+    debug("informAboutNext: Failed to create id packet");
+    return -1;
+  }
+
   char* nextNamePacket = createPacket(node->next->peer->name);
   if (nextNamePacket == NULL) {
     info("informAboutNext: Failed to create next name packet\n");
@@ -188,6 +226,11 @@ int informAboutNext(Node* node) {
   int numBytesSent;
   if ((numBytesSent = sendPacket(node->peer->socketFd, nextCommandPacket)) < 0) {
     info("informAboutNext: sendPacket: Failed to send next command packet. numBytesSent: %d\n", numBytesSent);
+    return -1;
+  }
+
+  if ((numBytesSent = sendPacket(node->peer->socketFd, nextIdPacket)) < 0) {
+    info("informAboutNext: sendPacket: Failed to send next id packet. numBytesSent: %d\n", numBytesSent);
     return -1;
   }
 
@@ -206,6 +249,14 @@ int informAboutPrevious(Node* node) {
     return -1;
   }
 
+  char previousIdStr[32];
+  snprintf(previousIdStr, 32, "%d", node->previous->peer->id);
+  char* previousIdPacket = createPacket(previousIdStr);
+  if (previousIdPacket == NULL) {
+    debug("informAboutPrevious: Failed to create id packet");
+    return -1;
+  }
+
   char* previousNamePacket = createPacket(node->previous->peer->name);
   if (previousNamePacket == NULL) {
     info("informAboutPrevious: Failed to create previous name packet\n");
@@ -215,6 +266,11 @@ int informAboutPrevious(Node* node) {
   int numBytesSent;
   if ((numBytesSent = sendPacket(node->peer->socketFd, previousCommandPacket)) < 0) {
     info("informAboutPrevious: sendPacket: Failed to send previous command packet. numBytesSent: %d\n", numBytesSent);
+    return -1;
+  }
+
+  if ((numBytesSent = sendPacket(node->peer->socketFd, previousIdPacket)) < 0) {
+    info("informAboutPrevious: sendPacket: Failed to send previous id packet. numBytesSent: %d\n", numBytesSent);
     return -1;
   }
 

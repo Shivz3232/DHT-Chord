@@ -13,8 +13,8 @@
 #include "bootstrap/bootstrap.h"
 
 void* initializeSelfSocket();
-void* handleNextCommand();
-void* handlePreviousCommand();
+int handleNextCommand();
+int handlePreviousCommand();
 
 int main(int argc, char const* argv[]) {
   info("Peer process started\n");
@@ -34,6 +34,10 @@ int main(int argc, char const* argv[]) {
   initializeSelfSocket();
   debug("Successfully initialized self socket.\n");
   debug("============================================\n\n\n\n");
+
+  debug("Sleeping for %d seconds\n", ctx->joinDelay);
+  sleep(ctx->joinDelay);
+  debug("Woke up\n");
 
   debug("============================================\n");
   debug("Dialing bootstrap server.\n");
@@ -68,9 +72,15 @@ int main(int argc, char const* argv[]) {
 
     // Handle message;
     if (strcmp(message, "NEXT") == 0) {
-      handleNextCommand();
+      if (handleNextCommand() < 0) {
+        info("Failed to handle next command\n");
+        break;
+      }
     } else if (strcmp(message, "PREVIOUS") == 0) {
-      handlePreviousCommand();
+      if (handlePreviousCommand() < 0) {
+        info("Failed to handle previous command\n");
+        break;
+      }
     } else {
       info("Received unknown command from bootstrap server: \"%d\"\n", message);
     }
@@ -79,6 +89,12 @@ int main(int argc, char const* argv[]) {
   debug("============================================\n");
   debug("Wrapping up\n");
   close(ctx->socketFd);
+  if (ctx->predecessor != NULL) {
+    freePeer(ctx->predecessor);
+  }
+  if (ctx->successor != NULL) {
+    freePeer(ctx->successor);
+  }
   debug("Processs finished\n");
   debug("============================================\n\n\n\n");
 
@@ -121,46 +137,66 @@ void* initializeSelfSocket() {
   return NULL;
 }
 
-void* handleNextCommand() {
+int handleNextCommand() {
+  char* idStr = receivePacket(ctx->bootstrap->socketFd);
+  if (idStr == NULL) {
+    info("handlePreviousCommand: Failed to receive id str\n");
+    return -1;
+  }
+
   char* peerName = receivePacket(ctx->bootstrap->socketFd);
   if (peerName == NULL) {
     info("handleNextCommand: Failed to receive next name packet\n");
-    return NULL;
+    return -1;
   }
 
   if (ctx->successor != NULL) {
-    free(ctx->successor->name);
-    free(ctx->successor);
+    freePeer(ctx->successor);
   }
 
   ctx->successor = createPeer(peerName);
+  ctx->successor->id = atoi(idStr);
 
   if (dialPeer(ctx->successor) < 0) {
     info("handleNextCommand: Failed to dial successor %s\n", peerName);
-    exit(1);
-  }
-
-  return NULL;
-}
-
-void* handlePreviousCommand() {
-  char* peerName = receivePacket(ctx->bootstrap->socketFd);
-  if (peerName == NULL) {
-    info("handleNextCommand: Failed to receive next name packet\n");
-    return NULL;
+    return -1;
   }
 
   if (ctx->predecessor != NULL) {
-    free(ctx->predecessor->name);
-    free(ctx->predecessor);
+    info("{peer_id:%d, predecesor:%d, succesor:%d}\n", ctx->id, ctx->predecessor->id, ctx->successor->id);
+  }
+
+  return 0;
+}
+
+int handlePreviousCommand() {
+  char* idStr = receivePacket(ctx->bootstrap->socketFd);
+  if (idStr == NULL) {
+    info("handlePreviousCommand: Failed to receive id str\n");
+    return -1;
+  }
+
+  char* peerName = receivePacket(ctx->bootstrap->socketFd);
+  if (peerName == NULL) {
+    info("handlePreviousCommand: Failed to receive next name packet\n");
+    return -1;
+  }
+
+  if (ctx->predecessor != NULL) {
+    freePeer(ctx->predecessor);
   }
 
   ctx->predecessor = createPeer(peerName);
+  ctx->predecessor->id = atoi(idStr);
 
   if (dialPeer(ctx->predecessor) < 0) {
-    info("handleNextCommand: Failed to dial predecessor %s\n", peerName);
-    exit(1);
+    info("handlePreviousCommand: Failed to dial predecessor %s\n", peerName);
+    return -1;
   }
 
-  return NULL;
+  if (ctx->successor != NULL) {
+    info("{peer_id:%d, predecesor:%d, succesor:%d}\n", ctx->id, ctx->predecessor->id, ctx->successor->id);
+  }
+
+  return 0;
 }
