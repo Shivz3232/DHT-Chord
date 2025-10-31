@@ -226,7 +226,6 @@ void* parseArgs(int argc, char* const argv[]) {
 
       case 'o':
         ctx->objectStoreFilePath = strdup(optarg);
-        extractIdFromObjectStoreFilePath();
         break;
 
       default:
@@ -255,4 +254,21 @@ void* extractIdFromObjectStoreFilePath() {
   ctx->id = (int) strtol(start, &end, 10);
 
   return NULL;
+}
+
+int openObjectsFile() {
+  char* objectsFilePath = malloc(sizeof(char) * ctx->maxObjectsFilePathSize);
+  snprintf(objectsFilePath, ctx->maxObjectsFilePathSize, "objects%d.txt\0", ctx->id);
+
+  debug("openObjectsFile: Inferred objects file path: %s\n", objectsFilePath);
+
+  FILE* fp = fopen(objectsFilePath, "a+");
+  if (fp == NULL) {
+    perror("fopen");
+    return -1;
+  }
+
+  ctx->objectsFile = fp;
+
+  return 0;
 }

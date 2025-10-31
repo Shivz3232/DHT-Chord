@@ -19,5 +19,7 @@ int receiveAll(int, char*, int);
 
 // CLI ARGS
 void* parseArgs(int, char* const*);
+void* extractIdFromObjectStoreFilePath();
+int openObjectsFile();
 
 #endif
