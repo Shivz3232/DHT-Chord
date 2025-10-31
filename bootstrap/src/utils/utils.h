@@ -20,4 +20,7 @@ int receiveAll(int, char*, int);
 // CLI ARGS
 void* parseArgs(int, char* const*);
 
+// MISC
+char* joinIntegers(int* arr, int count, char sep);
+
 #endif

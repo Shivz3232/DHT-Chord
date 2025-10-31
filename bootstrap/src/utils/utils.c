@@ -225,3 +225,33 @@ void* parseArgs(int argc, char* const argv[]) {
 
   return NULL;
 }
+
+char* joinIntegers(int* arr, int count, char sep) {
+  if (arr == NULL || count == 0) {
+    return NULL;
+  }
+
+  int maxDigitsPerInt = 12;
+  size_t bufferSize = count * maxDigitsPerInt;
+  char* result = malloc(bufferSize);
+  if (!result) {
+    perror("malloc");
+    return NULL;
+  }
+
+  result[0] = '\0';
+
+  char temp[32];
+  for (int i = 0; i < count; i++) {
+    snprintf(temp, sizeof(temp), "%d", arr[i]);
+    strcat(result, temp);
+
+    if (i < count - 1) {
+      size_t len = strlen(result);
+      result[len] = sep;
+      result[len + 1] = '\0';
+    }
+  }
+
+  return result;
+}
