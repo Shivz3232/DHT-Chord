@@ -1,6 +1,6 @@
 #ifndef BOOTSTRAP_H
 #define BOOTSTRAP_H
 
-void* dialBootstrapServer();
+int dialBootstrapServer();
 
 #endif

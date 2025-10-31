@@ -37,7 +37,10 @@ int main(int argc, char const* argv[]) {
 
   debug("============================================\n");
   debug("Dialing bootstrap server.\n");
-  dialBootstrapServer();
+  if (dialBootstrapServer() < 0) {
+    debug("Failed to dial bootstrap server\n");
+    return 1;
+  };
   debug("Successfully conected to bootstrap server.\n");
   debug("============================================\n\n\n\n");
 

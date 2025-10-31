@@ -11,8 +11,11 @@
 
 #include "../logger/logger.h"
 #include "../config/config.h"
+#include "../utils/utils.h"
 
-void* dialBootstrapServer() {
+int informMyId();
+
+int dialBootstrapServer() {
   ctx->bootstrap = malloc(sizeof(Peer));
   if (!ctx->bootstrap) {
     perror("malloc");
@@ -65,7 +68,7 @@ void* dialBootstrapServer() {
 
       if (retries == ctx->maxRetries) {
         info("dialBootstrapServer: Failed to dial bootstrap\n");
-        exit(1);
+        return -1;
       } else {
         sleep(ctx->backoffDuration);
         debug("Retrying to connect to %s\n", ctx->bootstrap->name);
@@ -78,5 +81,23 @@ void* dialBootstrapServer() {
     connected = 1;
   }
 
-  return NULL;
+  return informMyId();
+}
+
+int informMyId() {
+  char idStr[32];
+  snprintf(idStr, 32, "%d", ctx->id);
+  char* idPacket = createPacket(idStr);
+  if (idPacket == NULL) {
+    debug("informMyId: Failed to create view id packet");
+    return -1;
+  }
+
+  int numBytesSent;
+  if ((numBytesSent = sendPacket(ctx->bootstrap->socketFd, idPacket)) < 0) {
+    debug("informMyId :sendPacket: Failed to send reqId packet. numBytesSent: %d\n", numBytesSent);
+    return -1;
+  }
+
+  return 0;
 }

@@ -28,7 +28,7 @@ void* orchestrate(void* input) {
       continue;
     }
 
-    debug("orchestrate: Accepted connection from peer %s\n", newPeer->name);
+    debug("orchestrate: Accepted connection from peer %s, id: %d\n", newPeer->name, newPeer->id);
 
     Node* newNode = createNode(newPeer);
     if (newNode == NULL) {
@@ -81,10 +81,18 @@ Peer* acceptNewConnection() {
 
   Peer* newPeer = createPeer(peerName);
   if (newPeer == NULL) {
-    info("orchestrate: Failed to create new peer %s\n", peerName);
+    info("acceptNewConnection: Failed to create new peer %s\n", peerName);
     return NULL;
   }
 
+  char* idStr = receivePacket(peerFd);
+  if (idStr == NULL) {
+    info("acceptNewConnection: Failed to received id str\n");
+    freePeer(newPeer);
+    return NULL;
+  }
+
+  newPeer->id = atoi(idStr);
   newPeer->socketFd = peerFd;
 
   return newPeer;
