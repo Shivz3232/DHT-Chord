@@ -98,6 +98,10 @@ char* createPacket(char* content) {
   return packet;
 }
 
+int sendPacket(int socketFd, char* packet) {
+  return sendAll(socketFd, packet, strlen(packet));
+}
+
 int sendAll(int socketFd, char* buf, int len) {
   int total = 0;
 

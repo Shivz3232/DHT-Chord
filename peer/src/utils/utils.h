@@ -12,6 +12,7 @@ int bindToBest(struct addrinfo* addr_info);
 // PACKING & UNPACKING
 char* createPacket(char*);
 int sendAll(int, char*, int);
+int sendPacket(int, char*);
 
 char* receivePacket(int);
 int receiveAll(int, char*, int);

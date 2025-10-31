@@ -16,3 +16,9 @@ Peer* createPeer(char* name) {
 
   return newPeer;
 }
+
+void* freePeer(Peer* peer) {
+  free(peer->name);
+  free(peer);
+  return NULL;
+}

@@ -10,5 +10,6 @@ typedef struct Peer {
 } Peer;
 
 Peer* createPeer(char*);
+void* freePeer(Peer*);
 
 #endif
