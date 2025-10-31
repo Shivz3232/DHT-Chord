@@ -5,6 +5,7 @@
 
 typedef struct {
   int id;
+  FILE* objectsFile;
 
   int socketFd;
 
@@ -23,6 +24,8 @@ typedef struct {
   int channelSize;
   int maxRetries;
   int backoffDuration;
+  int maxObjectsFilePathSize;
+  int maxObjectsFileLineSize;
 
   Peer* bootstrap;
   Peer* predecessor;

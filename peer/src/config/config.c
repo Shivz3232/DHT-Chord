@@ -22,6 +22,8 @@ void* initializeMaxPeerNameSize();
 void* initializePacketHeaderSize();
 void* initializeMaxMessageSize();
 void* initializeMaxPacketSize();
+void* initializeMaxObjectsFilePathSize();
+void* initializeMaxObjectsFileLineSize();
 
 void* initializeEnvVariables() {
   ctx = malloc(sizeof(Context));
@@ -39,6 +41,8 @@ void* initializeEnvVariables() {
   initializePacketHeaderSize();
   initializeMaxMessageSize();
   initializeMaxPacketSize();
+  initializeMaxObjectsFilePathSize();
+  initializeMaxObjectsFileLineSize();
 
   return NULL;
 }
@@ -51,6 +55,8 @@ void* setDefaults() {
   ctx->channelSize = 1000;
   ctx->maxRetries = 5;
   ctx->backoffDuration = 5;
+  ctx->maxObjectsFilePathSize = 32;
+  ctx->maxObjectsFileLineSize = 32;
 
   ctx->maxPeerNameSize = 100;
 
@@ -201,6 +207,32 @@ void* initializeMaxPacketSize() {
   } else {
     ctx->maxPacketSize = atoi(value);
     debug("MAX_PACKET_SIZE set to %d", ctx->maxPacketSize);
+  }
+
+  return NULL;
+}
+
+void* initializeMaxObjectsFilePathSize() {
+  char* value = getenv("MAX_OBJECT_FILE_PATH_SIZE");
+
+  if (!value) {
+    debug("MAX_OBJECT_FILE_PATH_SIZE not found, defaulting to: %d", ctx->maxObjectsFilePathSize);
+  } else {
+    ctx->maxObjectsFilePathSize = atoi(value);
+    debug("MAX_OBJECT_FILE_PATH_SIZE set to %d", ctx->maxObjectsFilePathSize);
+  }
+
+  return NULL;
+}
+
+void* initializeMaxObjectsFileLineSize() {
+  char* value = getenv("MAX_OBJECT_FILE_LINE_SIZE");
+
+  if (!value) {
+    debug("MAX_OBJECT_FILE_LINE_SIZE not found, defaulting to: %d", ctx->maxObjectsFileLineSize);
+  } else {
+    ctx->maxObjectsFileLineSize = atoi(value);
+    debug("MAX_OBJECT_FILE_LINE_SIZE set to %d", ctx->maxObjectsFileLineSize);
   }
 
   return NULL;
