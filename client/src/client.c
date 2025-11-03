@@ -49,29 +49,53 @@ int main(int argc, char const* argv[]) {
 
   debug("============================================\n");
   debug("Executing testcase %d.\n", ctx->testCase);
-  int result = -1;
+  char *operation, *operationResult, *expectedOperationResult;
+  int clientId, objectId;
   switch (ctx->testCase) {
     case 3:
-      result = testCaseThree();
+      operationResult = executeTestCase(
+        (operation = "STORE"),
+        (clientId = 2),
+        (objectId = 69)
+      );
+      expectedOperationResult = "STORED";
       break;
 
     case 4:
-      result = testCaseFour();
+      operationResult = executeTestCase(
+        (operation = "RETRIEVE"),
+        (clientId = 3),
+        (objectId = 126)
+      );
+      expectedOperationResult = "RETRIEVED";
       break;
 
     case 5:
-      result = testCaseFive();
+      operationResult = executeTestCase(
+        (operation = "RETRIEVE"),
+        (clientId = 2),
+        (objectId = 99)
+      );
+      expectedOperationResult = "NOT FOUND";
       break;
 
     default:
       info("Unknown testcase\n");
       break;
   }
-  if (result < 0) {
+
+  if (operationResult == NULL) {
     info("Failed to execute testcase\n");
     debug("============================================\n\n\n\n");
-  } else {
+  }
+
+  if (strcmp(operationResult, expectedOperationResult) == 0) {
+    info("%s: %d\n", operationResult, objectId);
     info("Successfully executed testcase\n");
+    debug("============================================\n\n\n\n");
+  } else {
+    info("Failed to execute testcase\n");
+    info("Unexpected operation result %s, expected %s\n", operationResult, expectedOperationResult);
     debug("============================================\n\n\n\n");
   }
 

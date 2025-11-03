@@ -1,8 +1,6 @@
 #ifndef TESTCASE_H
 #define TESTCASE_H
 
-int testCaseThree();
-int testCaseFour();
-int testCaseFive();
+char* executeTestCase(char* operation, int clientId, int objectId);
 
 #endif

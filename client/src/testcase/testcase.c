@@ -11,52 +11,31 @@
 
 int sendRequest(char*, int, int);
 
-int testCaseThree() {
-  int clientId = 2;
-  int objectId = 69;
-
-  int result;
-  if ((result = sendRequest("STORE", clientId, objectId)) < 0) {
-    info("testCaseThree: Failed to send request\n");
-    return result;
+char* executeTestCase(char* operation, int clientId, int objectId) {
+  if (sendRequest(operation, clientId, objectId) < 0) {
+    info("executeTestCase: Failed to send request\n");
+    return NULL;
   }
 
   char* operationResult = receivePacket(ctx->bootstrap->socketFd);
   if (operationResult == NULL) {
-    info("testCaseThree: Failed to receive operation result\n");
-    return -1;
+    info("executeTestCase: Failed to receive operation result\n");
+    return NULL;
   }
 
   char* objectIdStr = receivePacket(ctx->bootstrap->socketFd);
   if (objectIdStr == NULL) {
-    info("testCaseThree: Failed to receive object id\n");
-    return -1;
+    info("executeTestCase: Failed to receive object id\n");
+    return NULL;
   }
   int resultObjectId = atoi(objectIdStr);
 
-  if (strcmp(operationResult, "STORED") != 0) {
-    info("testCaseThree: unexpected operation result %s\n", operationResult);
-    return -1;
-  }
-
   if (resultObjectId != objectId) {
-    info("testCaseThree: mismatching object id %d\n", resultObjectId);
-    return -1;
+    info("executeTestCase: mismatching object id %d\n", resultObjectId);
+    return NULL;
   }
 
-  info("%s: %d\n", operationResult, resultObjectId);
-
-  return 0;
-}
-
-int testCaseFour() {
-  sleep(1000);
-  return 0;
-}
-
-int testCaseFive() {
-  sleep(1000);
-  return 0;
+  return operationResult;
 }
 
 int sendRequest(char* operation, int clientId, int objectId) {
