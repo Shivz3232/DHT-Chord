@@ -102,6 +102,7 @@ int handleStore(char* reqIdStr, int predecessorFd) {
   }
 
   if (fprintf(ctx->objectsFile, "%s::%s\n", clientIdStr, objectIdStr) >= 0) {
+    fflush(ctx->objectsFile);
     debug("handleStore: Successfully stored object\n");
   } else {
     info("handleStore: Failed to store object\n");
