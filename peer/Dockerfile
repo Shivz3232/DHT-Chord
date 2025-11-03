@@ -19,4 +19,6 @@ COPY makefile .
 
 RUN make compile
 
+COPY objects*.txt .
+
 ENTRYPOINT ["bin/peer"]
