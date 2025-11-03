@@ -98,6 +98,34 @@ char* createPacket(char* content) {
   return packet;
 }
 
+int createAndSendPackets(int socketFd, char** data, int size) {
+  int val;
+  for (int i = 0; i < size; i++) {
+    char* packet = createPacket(data[i]);
+    if (packet == NULL) {
+      info("createAndSendPackets: Failed to create packet for %s\n", data[i]);
+      return -1;
+    }
+
+    if ((val = sendPacket(socketFd, packet)) < 0) {
+      return val;
+    }
+  }
+
+  return val;
+}
+
+int sendPackets(int socketFd, char** packets, int numPackets) {
+  int val;
+  for (int i = 0; i < numPackets; i++) {
+    if ((val = sendPacket(socketFd, packets[i])) < 0) {
+      return val;
+    }
+  }
+
+  return val;
+}
+
 int sendPacket(int socketFd, char* packet) {
   return sendAll(socketFd, packet, strlen(packet));
 }
@@ -258,7 +286,7 @@ void* extractIdFromObjectStoreFilePath() {
 
 int openObjectsFile() {
   char* objectsFilePath = malloc(sizeof(char) * ctx->maxObjectsFilePathSize);
-  snprintf(objectsFilePath, ctx->maxObjectsFilePathSize, "objects%d.txt\0", ctx->id);
+  snprintf(objectsFilePath, ctx->maxObjectsFilePathSize, "objects%d.txt", ctx->id);
 
   debug("openObjectsFile: Inferred objects file path: %s\n", objectsFilePath);
 

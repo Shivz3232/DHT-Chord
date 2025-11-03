@@ -13,10 +13,6 @@ void* setDefaults();
 void* initializeCEnv();
 void* initializePort();
 void* initializeHostName();
-void* initializeBacklog();
-void* initializeChannelSize();
-void* initializeMaxRetries();
-void* initializeBackoffDuration();
 void* initializeMaxPeerNameSize();
 void* initializePacketHeaderSize();
 void* initializeMaxMessageSize();
@@ -30,10 +26,6 @@ void* initializeEnvVariables() {
   initializeCEnv();
   initializePort();
   initializeHostName();
-  initializeBacklog();
-  initializeChannelSize();
-  initializeMaxRetries();
-  initializeBackoffDuration();
   initializeMaxPeerNameSize();
   initializePacketHeaderSize();
   initializeMaxMessageSize();
@@ -44,18 +36,15 @@ void* initializeEnvVariables() {
 
 void* setDefaults() {
   ctx->cEnv = "development";
-  ctx->processId = -1;
-  ctx->port = "3000";
-  ctx->backlog = 10;
-  ctx->channelSize = 1000;
+  ctx->port = "8080";
+  ctx->backlog = 1;
   ctx->maxRetries = 5;
   ctx->backoffDuration = 5;
 
   ctx->maxPeerNameSize = 100;
 
-  ctx->packetHeaderSize = 1;
+  ctx->packetHeaderSize = 3;
   ctx->maxMessageSize = 100;
-  ctx->maxPacketSize = ctx->packetHeaderSize + ctx->maxMessageSize;
 
   return NULL;
 }
@@ -101,58 +90,6 @@ void* initializeHostName() {
   return NULL;
 }
 
-void* initializeBacklog() {
-  char* value = getenv("BACKLOG");
-
-  if (!value) {
-    debug("BACKLOG not found, defaulting to: %d", ctx->backlog);
-  } else {
-    ctx->backlog = atoi(value);
-    debug("BACKLOG set to %d", ctx->backlog);
-  }
-
-  return NULL;
-}
-
-void* initializeChannelSize() {
-  char* value = getenv("CHANNEL_SIZE");
-
-  if (!value) {
-    debug("CHANNEL_SIZE not found, defaulting to: %d", ctx->channelSize);
-  } else {
-    ctx->channelSize = atoi(value);
-    debug("CHANNEL_SIZE set to %d", ctx->channelSize);
-  }
-
-  return NULL;
-}
-
-void* initializeMaxRetries() {
-  char* value = getenv("MAX_RETRIES");
-
-  if (!value) {
-    debug("MAX_RETRIES not found, defaulting to: %d", ctx->maxRetries);
-  } else {
-    ctx->maxRetries = atoi(value);
-    debug("MAX_RETRIES set to %d", ctx->maxRetries);
-  }
-
-  return NULL;
-}
-
-void* initializeBackoffDuration() {
-  char* value = getenv("backoffDuration");
-
-  if (!value) {
-    debug("backoffDuration not found, defaulting to: %d", ctx->backoffDuration);
-  } else {
-    ctx->backoffDuration = atoi(value);
-    debug("Back-off durationset to %d", ctx->backoffDuration);
-  }
-
-  return NULL;
-}
-
 void* initializeMaxPeerNameSize() {
   char* value = getenv("MAX_PEER_NAME_SIZE");
 
@@ -193,14 +130,6 @@ void* initializePacketHeaderSize() {
 }
 
 void* initializeMaxPacketSize() {
-  char* value = getenv("MAX_PACKET_SIZE");
-
-  if (!value) {
-    debug("MAX_PACKET_SIZE not found, defaulting to: %d", ctx->maxPacketSize);
-  } else {
-    ctx->maxPacketSize = atoi(value);
-    debug("MAX_PACKET_SIZE set to %d", ctx->maxPacketSize);
-  }
-
+  ctx->maxPacketSize = ctx->packetHeaderSize + ctx->maxMessageSize;
   return NULL;
 }

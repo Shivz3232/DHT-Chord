@@ -1,8 +1,8 @@
 -include .env
 export
 
-compile: src/peer.c src/config/config.c src/logger/logger.c src/peer/peer.c src/utils/utils.c src/bootstrap/bootstrap.c
-	gcc -o bin/peer src/peer.c src/config/config.c src/logger/logger.c src/peer/peer.c src/utils/utils.c src/bootstrap/bootstrap.c -I.
+compile: src/peer.c src/config/config.c src/logger/logger.c src/peer/peer.c src/utils/utils.c src/bootstrap/bootstrap.c src/chord/chord.c
+	gcc -o bin/peer src/peer.c src/config/config.c src/logger/logger.c src/peer/peer.c src/utils/utils.c src/bootstrap/bootstrap.c src/chord/chord.c -I.
 
 dev: compile
 	bin/peer

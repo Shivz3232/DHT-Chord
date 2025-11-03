@@ -11,6 +11,7 @@
 #include "utils/utils.h"
 #include "config/config.h"
 #include "bootstrap/bootstrap.h"
+#include "chord/chord.h"
 
 void* initializeSelfSocket();
 int handleNextCommand();
@@ -27,6 +28,21 @@ int main(int argc, char const* argv[]) {
   debug("Parsing CLI arguments.\n");
   parseArgs(argc, (char* const*)argv);
   debug("Successfully parsed CLI arguments.\n");
+  debug("============================================\n\n\n\n");
+
+  debug("============================================\n");
+  debug("Determining ID.\n");
+  extractIdFromObjectStoreFilePath();
+  debug("Successfully determined ID to be: %d.\n", ctx->id);
+  debug("============================================\n\n\n\n");
+
+  debug("============================================\n");
+  debug("Determining ID.\n");
+  if (openObjectsFile() < 0) {
+    info("Failed to open objects file");
+    return 1;
+  }
+  debug("Successfully determined ID to be: %d.\n", ctx->id);
   debug("============================================\n\n\n\n");
 
   debug("============================================\n");
@@ -48,6 +64,14 @@ int main(int argc, char const* argv[]) {
   debug("Successfully conected to bootstrap server.\n");
   debug("============================================\n\n\n\n");
 
+  debug("============================================\n");
+  debug("Starting thread to handle requests.\n");
+  pthread_t handleRequestsThread;
+  pthread_create(&handleRequestsThread, NULL, handleRequests, NULL);
+  pthread_detach(handleRequestsThread);
+  debug("Successfully started thread to handle requests.\n");
+  debug("============================================\n\n\n\n");
+
   fd_set readFdSet;
   FD_ZERO(&readFdSet);
   FD_SET(ctx->bootstrap->socketFd, &readFdSet);
@@ -60,6 +84,17 @@ int main(int argc, char const* argv[]) {
     if (FD_ISSET(ctx->bootstrap->socketFd, &readFdSet) != 1) {
       info("select returned for an event on unset file descriptor\n");
       continue;
+    }
+
+    char buf[1];
+    int n = recv(ctx->bootstrap->socketFd, buf, sizeof(buf), MSG_PEEK);
+    if (n == 0) {
+      debug("Bootstrap closed the connection\n");
+      break;
+    } else if (n < 0) {
+      debug("Failed to MSG_PEEK bootstrap socket\n");
+      perror("recv");
+      exit(EXIT_FAILURE);
     }
 
     char* message = receivePacket(ctx->bootstrap->socketFd);
@@ -81,8 +116,13 @@ int main(int argc, char const* argv[]) {
         info("Failed to handle previous command\n");
         break;
       }
+    } else if (strcmp(message, "REQUEST") == 0) {
+      if (handleRequest(ctx->bootstrap->socketFd) < 0) {
+        info("Failed to handle request\n");
+        break;
+      }
     } else {
-      info("Received unknown command from bootstrap server: \"%d\"\n", message);
+      info("Received unknown command from bootstrap server: \"%s\"\n", message);
     }
   }
 
@@ -151,16 +191,17 @@ int handleNextCommand() {
   }
 
   if (ctx->successor != NULL) {
+    close(ctx->successor->socketFd);
     freePeer(ctx->successor);
   }
 
   ctx->successor = createPeer(peerName);
   ctx->successor->id = atoi(idStr);
 
-  if (dialPeer(ctx->successor) < 0) {
-    info("handleNextCommand: Failed to dial successor %s\n", peerName);
-    return -1;
-  }
+  // if (dialPeer(ctx->successor) < 0) {
+  //   info("handleNextCommand: Failed to dial successor %s\n", peerName);
+  //   return -1;
+  // }
 
   if (ctx->predecessor != NULL) {
     info("{peer_id:%d, predecesor:%d, succesor:%d}\n", ctx->id, ctx->predecessor->id, ctx->successor->id);
@@ -183,16 +224,17 @@ int handlePreviousCommand() {
   }
 
   if (ctx->predecessor != NULL) {
+    close(ctx->predecessor->socketFd);
     freePeer(ctx->predecessor);
   }
 
   ctx->predecessor = createPeer(peerName);
   ctx->predecessor->id = atoi(idStr);
 
-  if (dialPeer(ctx->predecessor) < 0) {
-    info("handlePreviousCommand: Failed to dial predecessor %s\n", peerName);
-    return -1;
-  }
+  // if (dialPeer(ctx->predecessor) < 0) {
+  //   info("handlePreviousCommand: Failed to dial predecessor %s\n", peerName);
+  //   return -1;
+  // }
 
   if (ctx->successor != NULL) {
     info("{peer_id:%d, predecesor:%d, succesor:%d}\n", ctx->id, ctx->predecessor->id, ctx->successor->id);

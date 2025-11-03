@@ -9,8 +9,11 @@ int bindToBest(struct addrinfo* addr_info);
 void* acceptConnections(void*);
 
 // PACKING & UNPACKING
+int createAndSendPackets(int socketFd, char** data, int size);
+int sendPackets(int socketFd, char** packets, int numPackets);
 char* createPacket(char*);
 int sendAll(int, char*, int);
+int sendPacket(int, char*);
 
 char* receivePacket(int);
 int receiveAll(int, char*, int);

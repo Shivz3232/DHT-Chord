@@ -98,6 +98,38 @@ char* createPacket(char* content) {
   return packet;
 }
 
+int createAndSendPackets(int socketFd, char** data, int size) {
+  int val;
+  for (int i = 0; i < size; i++) {
+    char* packet = createPacket(data[i]);
+    if (packet == NULL) {
+      info("createAndSendPackets: Failed to create packet for %s\n", data[i]);
+      return -1;
+    }
+
+    if ((val = sendPacket(socketFd, packet)) < 0) {
+      return val;
+    }
+  }
+
+  return val;
+}
+
+int sendPackets(int socketFd, char** packets, int numPackets) {
+  int val;
+  for (int i = 0; i < numPackets; i++) {
+    if ((val = sendPacket(socketFd, packets[i])) < 0) {
+      return val;
+    }
+  }
+
+  return val;
+}
+
+int sendPacket(int socketFd, char* packet) {
+  return sendAll(socketFd, packet, strlen(packet));
+}
+
 int sendAll(int socketFd, char* buf, int len) {
   int total = 0;
 
@@ -195,7 +227,7 @@ void* parseArgs(int argc, char* const argv[]) {
   };
 
   while (1) {
-    opt = getopt_long(argc, argv, "", longOptions, &optionIndex);
+    opt = getopt_long(argc, argv, "b:d:t:", longOptions, &optionIndex);
 
     if (opt == -1) break;
 
@@ -210,6 +242,15 @@ void* parseArgs(int argc, char* const argv[]) {
         }
         break;
 
+      case 'b':
+        ctx->bootstrapHostname = strdup(optarg);
+
+      case 'd':
+        ctx->requestDelay = atoi(optarg);
+
+      case 't':
+        ctx->testCase = atoi(optarg);
+
       default:
         break;
     }
@@ -218,6 +259,10 @@ void* parseArgs(int argc, char* const argv[]) {
   debug("parseArgs: name set to %s", ctx->name);
   debug("parseArgs: network set to %s", ctx->network);
   debug("parseArgs: inputHostname set to %s", ctx->inputHostname);
+  debug("parseArgs: bootstrapHostname set to %s", ctx->bootstrapHostname);
+  debug("parseArgs: requestDelay set to %d", ctx->requestDelay);
+  debug("parseArgs: testCase set to %d", ctx->testCase);
+
 
   return NULL;
 }

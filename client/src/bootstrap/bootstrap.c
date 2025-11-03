@@ -1,4 +1,4 @@
-#include "peer.h"
+#include "bootstrap.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -9,35 +9,33 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include "../config/config.h"
 #include "../logger/logger.h"
+#include "../config/config.h"
+#include "../utils/utils.h"
 
-Peer* createPeer(char* name) {
-  Peer* newPeer = malloc(sizeof(Peer));
-  if (newPeer == NULL) {
+int dialBootstrapServer() {
+  ctx->bootstrap = malloc(sizeof(Peer));
+  if (!ctx->bootstrap) {
     perror("malloc");
     exit(EXIT_FAILURE);
   }
 
-  newPeer->name = name;
+  ctx->bootstrap->name = strdup(ctx->bootstrapHostname);
 
-  return newPeer;
-}
-
-int dialPeer(Peer* peer) {
   int retries = 0;
-  while (retries < ctx->maxRetries) {
+  int connected = 0;
+  while (connected == 0 && retries < ctx->maxRetries) {
     struct addrinfo hints, *addrInfo, *p;
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(peer->name, ctx->port, &hints, &addrInfo) < 0) {
+    if (getaddrinfo(ctx->bootstrap->name, ctx->port, &hints, &addrInfo) < 0) {
       perror("getaddrinfo");
       retries += 1;
       sleep(ctx->backoffDuration);
-      debug("dialPeer: Retrying to connect to %s\n", peer->name);
+      debug("Retrying to connect to %s\n", ctx->bootstrap->name);
       continue;
     }
 
@@ -49,7 +47,7 @@ int dialPeer(Peer* peer) {
         continue;
       }
 
-      debug("dialPeer: Attempting connection to %s\n", peer->name);
+      debug("Attempting connection to %s\n", ctx->bootstrap->name);
 
       if (connect(socketFd, p->ai_addr, p->ai_addrlen) < 0) {
         perror("connect");
@@ -57,33 +55,29 @@ int dialPeer(Peer* peer) {
         continue;
       }
 
+      debug("Successful connection to %s\n", ctx->bootstrap->name);
+
       break;
     }
 
     if (!p) {
-      info("Failed to connect to %s. Tried %d times. Sleeping.\n", peer->name, retries + 1);
+      info("Failed to connect to %s. Tried %d times. Sleeping.\n", ctx->bootstrap->name, retries + 1);
       retries += 1;
 
       if (retries == ctx->maxRetries) {
-        info("dialPeer: Failed to dial %s\n", peer->name);
+        info("dialBootstrapServer: Failed to dial bootstrap\n");
         return -1;
       } else {
         sleep(ctx->backoffDuration);
-        debug("dialPeer: Retrying to connect to %s\n", peer->name);
+        debug("Retrying to connect to %s\n", ctx->bootstrap->name);
         continue;
       }
     }
 
-    debug("dialPeer: Successful connection to %s\n", peer->name);
+    ctx->bootstrap->socketFd  = socketFd;
 
-    return socketFd;
+    connected = 1;
   }
 
-  return -1;
-}
-
-void* freePeer(Peer* peer) {
-  free(peer->name);
-  free(peer);
-  return NULL;
+  return 0;
 }

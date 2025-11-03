@@ -1,3 +1,5 @@
+#include "../peer/peer.h"
+
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -7,15 +9,18 @@ typedef struct {
   char* name;
   char* network;
   char* inputHostname;
+  char* bootstrapHostname;
+  int requestDelay;
+  int testCase;
 
   char* cEnv;
-  int processId;
   char* hostName;
   char* port;
   int backlog;
-  int channelSize;
   int maxRetries;
   int backoffDuration;
+
+  Peer* bootstrap;
 
   int maxPeerNameSize;
 

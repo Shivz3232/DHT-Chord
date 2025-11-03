@@ -8,8 +8,6 @@
 #include "../utils/utils.h"
 #include "../peers/peers.h"
 
-Node* ring;
-
 Peer* acceptNewConnection();
 
 Node* createNode(Peer*);
@@ -117,16 +115,16 @@ Node* createNode(Peer* peer) {
 }
 
 void* insertNode(Node* newNode) {
-  if (ring == NULL) {
+  if (ctx->ring == NULL) {
     newNode->next = newNode;
     newNode->previous = newNode;
 
-    ring = newNode;
+    ctx->ring = newNode;
 
     return NULL;
   }
 
-  Node* current = ring;
+  Node* current = ctx->ring;
   do {
     if ((current->peer->id < newNode->peer->id && newNode->peer->id < current->next->peer->id) ||
         (current->peer->id > current->next->peer->id && // wrap-around point
@@ -142,27 +140,27 @@ void* insertNode(Node* newNode) {
       current->next = newNode;
 
       // If the new ID is smaller than the head’s ID, update head
-      if (newNode->peer->id < ring->peer->id) {
-        ring = newNode;
+      if (newNode->peer->id < ctx->ring->peer->id) {
+        ctx->ring = newNode;
       };
 
       return NULL;
     }
 
     current = current->next;
-  } while (current != ring);
+  } while (current != ctx->ring);
 
   // If we didn’t find a spot (e.g., all have the same ID order),
   // insert before head (at the end)
-  newNode->next = ring;
-  newNode->previous = ring->previous;
+  newNode->next = ctx->ring;
+  newNode->previous = ctx->ring->previous;
 
-  ring->previous->next = newNode;
-  ring->previous = newNode;
+  ctx->ring->previous->next = newNode;
+  ctx->ring->previous = newNode;
 
   // If the new peer has a smaller ID than head, it becomes the new head
-  if (newNode->peer->id < ring->peer->id) {
-    ring = newNode;
+  if (newNode->peer->id < ctx->ring->peer->id) {
+    ctx->ring = newNode;
   };
 
   return NULL;
@@ -171,11 +169,11 @@ void* insertNode(Node* newNode) {
 int nodeCount() {
   int count = 0;
 
-  Node* current = ring;
+  Node* current = ctx->ring;
   do {
     count++;
     current = current->next;
-  } while (current != ring);
+  } while (current != ctx->ring);
 
   return count;
 }
@@ -185,11 +183,11 @@ char* ringToStr() {
   int* ids = malloc(sizeof(int) * count);
 
   int i = 0;
-  Node* current = ring;
+  Node* current = ctx->ring;
   do {
     ids[i++] = current->peer->id;
     current = current->next;
-  } while (current != ring);
+  } while (current != ctx->ring);
 
   return joinIntegers(ids, count, ',');
 }

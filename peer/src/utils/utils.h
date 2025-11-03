@@ -10,6 +10,8 @@ char* getNameInfo(struct sockaddr*, socklen_t*);
 int bindToBest(struct addrinfo* addr_info);
 
 // PACKING & UNPACKING
+int createAndSendPackets(int socketFd, char** data, int size);
+int sendPackets(int socketFd, char** packets, int numPackets);
 char* createPacket(char*);
 int sendAll(int, char*, int);
 int sendPacket(int, char*);

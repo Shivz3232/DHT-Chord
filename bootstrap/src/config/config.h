@@ -1,10 +1,14 @@
 #include "../peers/peers.h"
+#include "../orchestrate/orchestrate.h"
 
 #ifndef CONFIG_H
 #define CONFIG_H
 
 typedef struct {
   int socketFd;
+  int appSocketFd;
+
+  Node* ring;
 
   char* name;
   char* network;
@@ -14,6 +18,7 @@ typedef struct {
   int processId;
   char* hostName;
   char* port;
+  char* appPort;
   int backlog;
   int channelSize;
   int maxRetries;

@@ -7,14 +7,16 @@
 
 #include <pthread.h>
 
+#include "config/config.h"
 #include "logger/logger.h"
 #include "utils/utils.h"
-#include "config/config.h"
+#include "bootstrap/bootstrap.h"
+#include "testcase/testcase.h"
 
 void* initializeSelfSocket();
 
 int main(int argc, char const* argv[]) {
-  info("Bootstrap process started\n");
+  info("Process started\n");
 
   initializeEnvVariables();
   debug("Successfully initialized context.\n");
@@ -32,7 +34,46 @@ int main(int argc, char const* argv[]) {
   debug("Successfully initialized self socket.\n");
   debug("============================================\n\n\n\n");
 
-  sleep(10000);
+  debug("Going to sleep for %d seconds\n", ctx->requestDelay);
+  sleep(ctx->requestDelay);
+  debug("Woke up\n");
+
+  debug("============================================\n");
+  debug("Connect to bootstrap.\n");
+  if (dialBootstrapServer() < 0) {
+    info("Failed to dial bootstrap\n");
+    return 1;
+  }
+  debug("Successfully connected to bootstrap.\n");
+  debug("============================================\n\n\n\n");
+
+  debug("============================================\n");
+  debug("Executing testcase %d.\n", ctx->testCase);
+  int result = -1;
+  switch (ctx->testCase) {
+    case 3:
+      result = testCaseThree();
+      break;
+
+    case 4:
+      result = testCaseFour();
+      break;
+
+    case 5:
+      result = testCaseFive();
+      break;
+
+    default:
+      info("Unknown testcase\n");
+      break;
+  }
+  if (result < 0) {
+    info("Failed to execute testcase\n");
+    debug("============================================\n\n\n\n");
+  } else {
+    info("Successfully executed testcase\n");
+    debug("============================================\n\n\n\n");
+  }
 
   debug("============================================\n");
   debug("Wrapping up\n");

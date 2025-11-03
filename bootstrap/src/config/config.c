@@ -48,6 +48,7 @@ void* setDefaults() {
   ctx->cEnv = "development";
   ctx->processId = -1;
   ctx->port = "3000";
+  ctx->appPort = "8080";
   ctx->backlog = 10;
   ctx->channelSize = 1000;
   ctx->maxRetries = 5;

@@ -11,6 +11,8 @@ int bindToBest(struct addrinfo* addr_info);
 
 // PACKING & UNPACKING
 char* createPacket(char*);
+int createAndSendPackets(int socketFd, char** data, int size);
+int sendPackets(int socketFd, char** packets, int numPackets);
 int sendPacket(int, char*);
 int sendAll(int, char*, int);
 
