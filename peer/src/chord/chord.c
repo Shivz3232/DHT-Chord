@@ -10,7 +10,7 @@
 #include "../utils/utils.h"
 
 int handleStore(char* reqIdStr, int predecessorFd);
-int handleRetreive(char* reqIdStr, int predecessorFd);
+int handleRetrieve(char* reqIdStr, int predecessorFd);
 
 int forwardRequest(char*, char*, char*, char*);
 
@@ -68,7 +68,7 @@ int handleRequest(int predecessorFd) {
   if (strcmp(operation, "STORE") == 0) {
     return handleStore(reqIdStr, predecessorFd);
   } else if (strcmp(operation, "RETRIEVE") == 0) {
-    return handleRetreive(reqIdStr, predecessorFd);
+    return handleRetrieve(reqIdStr, predecessorFd);
   }
 
   info("handleRequest: received unknown operation from predecessor: %s\n", operation);
@@ -96,6 +96,7 @@ int handleStore(char* reqIdStr, int predecessorFd) {
       debug("handleStore: Forwarding request\n");
       return forwardRequest(reqIdStr, "STORE", objectIdStr, clientIdStr);
     } else {
+      debug("handleStore: Reached end of ring\n");
       debug("handleStore: Storing with self\n");
     }
   }
@@ -122,45 +123,55 @@ int handleStore(char* reqIdStr, int predecessorFd) {
   return 0;
 }
 
-int handleRetreive(char* reqIdStr, int predecessorFd) {
+int handleRetrieve(char* reqIdStr, int predecessorFd) {
   char* objectIdStr = receivePacket(predecessorFd);
   if (objectIdStr == NULL) {
-    info("handleStore: Failed to receive object id string\n");
+    info("handleRetrieve: Failed to receive object id string\n");
     return -1;
   }
 
   char* clientIdStr = receivePacket(predecessorFd);
   if (clientIdStr == NULL) {
-    info("handleStore: Failed to receive client id string\n");
+    info("handleRetrieve: Failed to receive client id string\n");
     return -1;
   }
 
-  if (atoi(objectIdStr) > ctx->id) {
-    return forwardRequest(reqIdStr, "RETRIEVE", objectIdStr, clientIdStr);
+  debug("handleRetrieve: Handling retrieve request with id %s for object %s from client %s\n", reqIdStr, objectIdStr, clientIdStr);
+
+  int requestedObjectId = atoi(objectIdStr);
+  if (requestedObjectId > ctx->id) {
+    if (ctx->successor->id > ctx->id) {
+      debug("handleRetrieve: Forwarding request\n");
+      return forwardRequest(reqIdStr, "RETRIEVE", objectIdStr, clientIdStr);
+    } else {
+      debug("handleRetrieve: Reached end of ring\n");
+      debug("handleRetrieve: Trying to retrieve from self\n");
+    }
   }
 
   int requestedClientId = atoi(clientIdStr);
-  int requestedObjectId = atoi(objectIdStr);
 
   int found = 0;
   int clientId = -1;
   int objectId = -1;
-  while (fscanf(ctx->objectsFile, "%d::%d\n", &clientId, &objectId) == 2) {
+  rewind(ctx->objectsFile);
+  while (fscanf(ctx->objectsFile, "%d::%d", &clientId, &objectId) == 2) {
     if (clientId == requestedClientId && objectId == requestedObjectId) {
       found = 1;
       break;
     }
   }
-  rewind(ctx->objectsFile);
 
   char** data = malloc(sizeof(char*) * 1);
   if (found == 1) {
+    debug("handleRetrieve: Object was found\n");
     data[0] = "RETRIEVED";
   } else {
-    data[0] = "NOTFOUND";
+    debug("handleRetrieve: Object was not found\n");
+    data[0] = "NOT FOUND";
   }
 
-  return createAndSendPackets(ctx->socketFd, data, 1);
+  return createAndSendPackets(ctx->bootstrap->socketFd, data, 1);
 }
 
 int forwardRequest(char* reqId, char* operation, char* objectIdStr, char* clientIdStr) {
