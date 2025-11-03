@@ -48,7 +48,7 @@ void* initializeEnvVariables() {
 }
 
 void* setDefaults() {
-  ctx->cEnv = "development";
+  ctx->cEnv = "production";
   ctx->processId = -1;
   ctx->port = "3000";
   ctx->backlog = 2;

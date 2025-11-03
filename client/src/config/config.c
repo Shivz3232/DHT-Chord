@@ -35,7 +35,7 @@ void* initializeEnvVariables() {
 }
 
 void* setDefaults() {
-  ctx->cEnv = "development";
+  ctx->cEnv = "production";
   ctx->port = "8080";
   ctx->backlog = 1;
   ctx->maxRetries = 5;
