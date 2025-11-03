@@ -10,7 +10,7 @@ void* info(const char* fmt, ...) {
   va_list args;
 
   va_start(args, fmt);
-  fprintf(stderr, "info: ");
+  fprintf(stderr, "");
   vfprintf(stderr, fmt, args);
   fprintf(stderr, "\n");
 
