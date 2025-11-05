@@ -158,6 +158,8 @@ void* app() {
 
     if (handleClientRequest(clientFd) < 0) {
       info("app: Failed to handle client request\n");
+      close(clientFd);
+      break;
     }
 
     debug("app: Successfully handled client request\n");
@@ -214,10 +216,10 @@ int handleClientRequest(int clientFd) {
     exit(EXIT_FAILURE);
   }
 
-  char* operationResult;
+  char* operationResult = "FAILED";
   Node* cur = ctx->ring;
   do {
-    if (FD_ISSET(cur->peer->socketFd, &fdSet) != 1) {
+    if (!FD_ISSET(cur->peer->socketFd, &fdSet)) {
       cur = cur->next;
       continue;
     }
@@ -245,6 +247,7 @@ int handleClientRequest(int clientFd) {
 }
 
 int prepareFdSet(fd_set* fdSet) {
+  FD_ZERO(fdSet);
   int fdMax = -1;
 
   Node* cur = ctx->ring;

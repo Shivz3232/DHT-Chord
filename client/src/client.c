@@ -74,9 +74,18 @@ int main(int argc, char const* argv[]) {
       operationResult = executeTestCase(
         (operation = "RETRIEVE"),
         (clientId = 2),
-        (objectId = 99)
+        (objectId = 69)
       );
       expectedOperationResult = "NOT FOUND";
+      break;
+
+    case 6:
+      operationResult = executeTestCase(
+        (operation = "RETRIEVE"),
+        (clientId = 2),
+        (objectId = 69)
+      );
+      expectedOperationResult = "RETRIEVED";
       break;
 
     default:
